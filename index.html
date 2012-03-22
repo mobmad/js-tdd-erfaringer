@@ -90,7 +90,7 @@ Er det greit å ikke teste en stor del av kodebasen?
   
   Det har kommet gode verktøy for å teste JS
   
-  Fordi du ville gjort det hvis det var Java
+  Fordi du ville gjort det hvis det var backend-koden
 </div>
 
 <div class="col">
@@ -181,7 +181,7 @@ Dette er enklest å komme i gang med, og å komme i gang er viktigere enn å umi
 
 Ikke prioriter å teste det som må "føles på".
 
-Ha gode abstraksjoner for GUI, tekst og animasjoner slik at du slipper å teste dette.
+Ha gode abstraksjoner for GUI, tekst og animasjoner slik at du slipper å skrive tester for dette.
 
 ---
 
@@ -215,7 +215,7 @@ minifierSpec.js:
       describe("isDevelopment", function() {
         it("should return true if data-development is true", function() {
           var minifier = new Minifier(),
-              src = '<script src="/templates.js" data-development="true"></script>';
+              src = '<script src="/debug.js" data-development="true"></script>';
           
           var isDevelopment = minifier.isDevelopment(src);
           
@@ -237,7 +237,7 @@ minifierSpec.js:
       describe("isDevelopment", function() {
         it("should return true if data-development is true", function() {
           var minifier = new Minifier(),
-              src = '<script src="/templates.js" data-development="true"></script>';
+              src = '<script src="/debug.js" data-development="true"></script>';
           
           var isDevelopment = minifier.isDevelopment(src);
           
@@ -344,13 +344,13 @@ Manipulering av DOM
 Oppbygging av options/HTML
 </div>
 <div class="col">
--> Person-modell?
+-> Person-modell / DAO?
 
 -> Person-modell / mapper?
 
 -> I eget view?
 
--> optionsMapper som kan mappe en liste med objekter til `<option>` elementer?
+-> optionsMapper som kan mappe en liste med objekter til `<option>`- elementer?
 
 
 ---
