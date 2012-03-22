@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Title</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script src="https://github.com/downloads/gnab/remark/remark-0.3.4.min.js" type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <script src="https://github.com/downloads/kjbekkelund/remark-bekk/bekk-0.0.3.js" type="text/javascript"></script>
+    <link href="https://github.com/downloads/kjbekkelund/remark-bekk/bekk-0.0.3.css" type="text/css" rel="stylesheet">
+    <style type="text/css" media="screen">
+      #slideshow .slide .content.front-page h1 { width: 100%; }
+      .slide p { padding: 0; margin: 1.1em 0; }
+      .slide ul { padding: 0; margin: 1.1em 0; }
+      #slideshow .slide .content ul li { padding-left: 1.3em; }
+      #slideshow .slide .content.cols.two .col { width: 45%; margin-right: 10%;}
+      #slideshow .slide .content.cols .col:last-child { margin-right: 0; }
+      .slide img { max-width: 100%; }
+      .slide .subviews img { max-width: 80%; margin-left: 70px; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+.front-page
+
+# Erfaringer med JavaScript-testing
+
+## expect(enterpriseApp).toHaveJsTests();
+
+Fagdag i BEKK
+
+Mads Mobæk og Kim Joar Bekkelund
+
+23/03/2012
+
+---
+
+# Om oss
+
+
+
+---
+
+.agenda
+
+# Agenda
+
+* Hvorfor teste JavaScript?
+* Hvordan komme i gang?
+* Enhetstesting
+* Integrasjonstesting
+* Testabstraksjoner
+* DOM, views, modularitet og uavhengighet
+
+---
+
+.middle.center
+
+# Enterprise-app?
+
+JavaScript-applikasjon med mange linjer kode og mange utviklere som løser ikke-trivielle problemer
+
+---
+
+.middle.center
+
+# Så...
+Er det greit å ikke teste en stor del av kodebasen?
+
+---
+
+.middle.center
+
+# Nei, selvfølgelig skal du teste front-end!
+
+---
+
+.cols.two
+
+# Hvorfor?
+
+<div class="col">
+  Trygghet til å gjøre refaktoreringer
+  
+  Ingen kompilatorstøtte (og mindre IDE-støtte)
+  
+  Cross-browser utfordringer
+  
+  Testene er raske å kjøre
+  
+  Det har kommet gode verktøy for å teste JS
+  
+  Fordi du ville gjort det hvis det var Java
+</div>
+
+<div class="col">
+  Blir mindre avhengig av én person
+  
+  Holder kvalitetsfokus
+  
+  Kan fjerne kompeksitet
+  
+  Gjenbrukbarhet
+  
+  Vedlikeholdbarhet
+  
+  Tester er dokumentasjon
+</div>
+
+---
+
+# Problem: å komme i gang
+
+Hvilket rammeverk skal vi velge?
+
+Hva skal vi teste? Hvor begynner vi?
+
+Hvordan får jeg med teamet (og kunden)?
+
+---
+
+.middle.center
+
+# Løsning
+
+---
+
+.middle.center
+
+Start i det _små_. 
+
+Det er greit å ikke løse alle problemene på en gang.
+
+---
+
+.middle.center
+
+Velg et rammeverk og godta at det ikke er perfekt.
+
+Vi valgte jasmine (fordi noen på teamet hadde vært borti det før og vi visste andre prosjekter benyttet det)
+
+---
+
+.middle.center
+
+Fokuser på tester foran infrastruktur.
+
+---
+
+.middle.center
+
+Vær en diktator. 
+
+Ta initiativet til testing.
+
+---
+
+.middle.center
+
+Jobb med kultur.
+
+Tester _vil_ gi verdi. GSP vs Tech. Alle "kan" JavaScript.
+
+---
+
+.middle.center
+
+Stopp opp og del læring med de andre på teamet.
+
+---
+
+.middle.center
+
+Start med enhetstester for _ny_ kode.
+
+Dette er enklest å komme i gang med, og å komme i gang er viktigere enn å umiddelbart finne området hvor tester har mest verdi.
+
+---
+
+.middle.center
+
+Ikke prioriter å teste det som må "føles på".
+
+Ha gode abstraksjoner for GUI, tekst og animasjoner slik at du slipper å teste dette.
+
+---
+
+# Eksempel - enhetstest
+
+minifierSpec.js:
+
+    .javascript
+    describe("minifier", function() {
+      describe("isDevelopment", function() {
+
+
+
+
+
+
+
+
+      });
+    });
+
+
+---
+
+# Eksempel - enhetstest
+
+minifierSpec.js:
+
+    .javascript
+    describe("minifier", function() {
+      describe("isDevelopment", function() {
+        it("should return true if data-development is true", function() {
+          var minifier = new Minifier(),
+              src = '<script src="/templates.js" data-development="true"></script>';
+          
+          var isDevelopment = minifier.isDevelopment(src);
+          
+          expect(isDevelopment).toBeTruthy();
+        });
+      });
+    });
+
+
+
+---
+
+# Eksempel - enhetstest
+
+minifierSpec.js:
+
+    .javascript
+    describe("minifier", function() {
+      describe("isDevelopment", function() {
+        it("should return true if data-development is true", function() {
+          var minifier = new Minifier(),
+              src = '<script src="/templates.js" data-development="true"></script>';
+          
+          var isDevelopment = minifier.isDevelopment(src);
+          
+          expect(isDevelopment).toBeTruthy();
+        });
+      });
+    });
+
+Testresultat:
+
+![](img/unittest-failing.png?v1)
+
+---
+
+# Eksempel - enhetstest
+
+minifier.js:
+
+    .javascript
+    function Minifier(){
+    }
+
+    Minifier.prototype.isDevelopment = function(line) {
+      return !!line.match(/data-development="?true"?/);
+    }
+
+
+---
+
+# Eksempel - enhetstest
+
+minifier.js:
+
+    .javascript
+    function Minifier(){
+    }
+
+    Minifier.prototype.isDevelopment = function(line) {
+      return !!line.match(/data-development="?true"?/);
+    }
+
+Testresultat:
+
+![](img/unittest-pass.png?v1)
+
+---
+
+.middle.center
+
+# Du er i gang!
+... og har allerede kommet lengre enn mange andre
+
+---
+# Problem: teste legacy JS
+
+    .javascript
+    function populateDropdownWithPersons(select) {
+      $.getJSON('http://localhost:1337/persons.json', function(data) {
+        var options = [];
+
+        $.each(data, function(key, val) {
+          options.push('<option value="' + val.id + '">' + val.name +
+              ' (' + (val.project || 'ukjent') + ')</option>');
+        });
+
+        select.html(options.join(''));
+      });
+    }
+
+Typisk komplekst (gjør mange ting/har mange avhengigheter). I eksemplet over:
+
+* Nettverkskall
+* Parsing av respons
+* Oppbygging av HTML
+* DOM-manipulering
+
+---
+# Problem: teste legacy JS
+
+    .javascript
+    function populateDropdownWithPersons(select) {
+      $.getJSON('http://localhost:1337/persons.json', function(data) {
+        var options = [];
+
+        $.each(data, function(key, val) {
+          options.push('<option value="' + val.id + '">' + val.name +
+              ' (' + (val.project || 'ukjent') + ')</option>');
+        });
+
+        select.html(options.join(''));
+      });
+    }
+
+Hvordan kan vi bryte opp `populateDropdownWithPersons`?
+
+.cols.two
+<div class="col">
+Nettverkskall
+
+Parsing av respons
+
+Manipulering av DOM
+
+Oppbygging av options/HTML
+</div>
+<div class="col">
+-> Person-modell?
+
+-> Person-modell / mapper?
+
+-> I eget view?
+
+-> optionsMapper som kan mappe en liste med objekter til `<option>` elementer?
+
+
+---
+
+# Eksempel
+
+optionsMapperSpec.js:
+
+    .javascript
+    describe("optionsMapper", function() {
+      it("should convert array of objects to array of <option>s", function() {
+        var persons = [{id: 8, name: 'Kim Joar'}, {id: 9, name: 'Mads'}];
+
+        var options = BEKK.optionsMapper(persons, {
+          value: 'id',
+          text: 'name'
+        });
+
+        expect(options.length).toEqual(persons.length);
+        expect(options[0]).toEqual('<option value="8">Kim Joar</option>');
+      });
+    });
+
+---
+
+# Eksempel
+
+optionsMapperSpec.js:
+
+    .javascript
+    describe("optionsMapper", function() {
+      it("should convert array of objects to array of <option>s", function() {
+        var persons = [{id: 8, name: 'Kim Joar'}, {id: 9, name: 'Mads'}];
+
+        var options = BEKK.optionsMapper(persons, {
+          value: 'id',
+          text: 'name'
+        });
+
+        expect(options.length).toEqual(persons.length);
+        expect(options[0]).toEqual('<option value="8">Kim Joar</option>');
+      });
+    });
+
+optionsMapper.js
+
+    .javascript
+    var BEKK = BEKK || {};
+    BEKK.optionsMapper = function (array, opts) {
+      var options = [];
+
+      for(var i = 0, length = array.length; i < length; i++) {
+        var obj = array[i];
+        options.push('<option value="' + obj[opts.value] + '">' + 
+            obj[opts.text] + '</option>');
+      }
+
+      return options;
+    }
+
+---
+
+# Løsning
+
+Jobb med patterns og abstraksjoner
+
+* Bruk single responsibility principle
+* Del opp i filer
+
+---
+
+# Løsning
+
+Jobb med patterns og abstraksjoner
+
+* Bruk single responsibility principle
+* Del opp i filer
+
+Parprogrammer for å løse vanskelige problemer
+
+---
+
+# Løsning
+
+Jobb med patterns og abstraksjoner
+
+* Bruk single responsibility principle
+* Del opp i filer
+
+Parprogrammer for å løse vanskelige problemer
+
+Ta i bruk bibliotek som f.eks. sinon.js, som kan hjelpe med:
+
+* spy/stubs/mocks
+* Manipulering av tid (Fake timers)
+
+---
+
+# Løsning
+
+Jobb med patterns og abstraksjoner
+
+* Bruk single responsibility principle
+* Del opp i filer
+
+Parprogrammer for å løse vanskelige problemer
+
+Ta i bruk bibliotek som f.eks. sinon.js, som kan hjelpe med:
+
+* spy/stubs/mocks
+* Manipulering av tid (Fake timers)
+
+Diktatoren fortsetter i sin jobb, og:
+
+* sørger for at mest mulig testes
+* prototyper og skaffer nødvendig kunnskap for å hjelpe teamet videre
+
+---
+
+.middle.center
+
+# ... men enhetstester er ikke alltid nok
+
+---
+
+# Problem
+
+Noen sentrale aspekter vi hadde oversett:
+
+* Det skjer mye mellom AJAX-respons og visning av HTML.
+* Det skjer mye basert på "veien gjennom siden".
+* Det er mange plasser feil må håndteres (på forskjellige måter).
+
+---
+
+# Problem
+
+Noen sentrale aspekter vi hadde oversett:
+
+* Det skjer mye mellom AJAX-respons og visning av HTML.
+* Det skjer mye basert på "veien gjennom siden".
+* Det er mange plasser feil må håndteres (på forskjellige måter).
+
+I tillegg var innholdet i vår index.html:
+
+    <body></body>
+
+Og vi hadde nesten bare "ferdig-prosessert" data via REST.
+
+---
+
+# Løsning: Integrasjonstester
+
+Det vil si testing av hele klientside-stacken.
+
+Noen av våre krav:
+
+* Lik våre andre tester, altså ren JavaScript for å skrive testene.
+* De må kunne kjøre under bygging.
+* Tregt (og komplekst) baksystem, altså mocker vi AJAX-kall.
+
+1 time med hele teamet for å sketsje ut første test. Stopp opp og prat sammen!
+
+... men husk: de må være _tåpelig_ raske og enkle å implementere og endre.
+Vanen vi slåss mot er refresh i nettleseren!
+
+---
+
+# Hvordan en test ser ut
+
+    .javascript
+    it("should list all persons in response", function() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    });
+
+---
+
+# Hvordan en test ser ut
+
+    .javascript
+    it("should list all persons in response", function() {
+
+      // henter en AJAX-respons
+      var response = readFixtures("responses/persons.json");
+
+
+
+
+
+
+
+
+
+
+
+
+    });
+
+---
+
+# Hvordan en test ser ut
+
+    .javascript
+    it("should list all persons in response", function() {
+
+      // henter en AJAX-respons
+      var response = readFixtures("responses/persons.json");
+
+      var view = new PersonsView({ persons: new Persons() });
+      view.render(); // viser overskrift og annen statisk info
+
+
+
+
+
+
+
+
+
+    });
+
+---
+
+# Hvordan en test ser ut
+
+    .javascript
+    it("should list all persons in response", function() {
+
+      // henter en AJAX-respons
+      var response = readFixtures("responses/persons.json");
+
+      var view = new PersonsView({ persons: new Persons() });
+      view.render(); // viser overskrift og annen statisk info
+
+
+
+        view.persons.fetch(); // trigger AJAX-kall
+
+
+
+
+
+    });
+
+---
+
+# Hvordan en test ser ut
+
+    .javascript
+    it("should list all persons in response", function() {
+
+      // henter en AJAX-respons
+      var response = readFixtures("responses/persons.json");
+
+      var view = new PersonsView({ persons: new Persons() });
+      view.render(); // viser overskrift og annen statisk info
+
+      // setter opp responsen
+      fakeResponse(response, {}, function() {
+        view.persons.fetch(); // trigger AJAX-kall
+      });
+
+
+
+
+    });
+
+---
+
+# Hvordan en test ser ut
+
+    .javascript
+    it("should list all persons in response", function() {
+
+      // henter en AJAX-respons
+      var response = readFixtures("responses/persons.json");
+
+      var view = new PersonsView({ persons: new Persons() });
+      view.render(); // viser overskrift og annen statisk info
+
+      // setter opp responsen
+      fakeResponse(response, {}, function() {
+        view.persons.fetch(); // trigger AJAX-kall
+      });
+
+      // view-abstraksjonen har html tilgjengelig
+      expect($(view.html).find(".persons li").length).toEqual(20);
+
+    });
+
+---
+
+# Hvordan en test ser ut
+
+    .javascript
+    it("should list all persons in response", function() {
+
+      // henter en AJAX-respons
+      var response = readFixtures("responses/persons.json");
+
+      var view = new PersonsView({ persons: new Persons() });
+      view.render(); // viser overskrift og annen statisk info
+
+      // setter opp responsen
+      fakeResponse(response, {}, function() {
+        view.persons.fetch(); // trigger AJAX-kall
+      });
+
+      // view-abstraksjonen har html tilgjengelig
+      expect($(view.html).find(".persons li").length).toEqual(20);
+
+    });
+
+To biblioteker i bruk:
+
+* jasmine-jquery, for lasting av fixtures
+* Sinon.js, for mocking av AJAX-kall
+
+---
+
+# Testabstraksjoner
+
+    .javascript
+    function getPersonsViewFromResponse(response, options) {
+      var view = new PersonsView({ persons: new Persons() });
+      view.render(); // viser overskrift og annen statisk info
+
+      // setter opp responsen
+      fakeResponse(response, options, function() {
+        view.persons.fetch(); // trigger AJAX-kall
+      });
+
+      return view;
+    }
+
+---
+
+# Testabstraksjoner
+
+    .javascript
+    function getPersonsViewFromResponse(response, options) {
+      var view = new PersonsView({ persons: new Persons() });
+      view.render(); // viser overskrift og annen statisk info
+
+      // setter opp responsen
+      fakeResponse(response, options, function() {
+        view.persons.fetch(); // trigger AJAX-kall
+      });
+
+      return view;
+    }
+
+og:
+
+    .javascript
+    function fakeResponse(response, options, callback) {
+      var statusCode, headers, server, resp;
+
+      statusCode = options.statusCode || 200;
+      headers = options.headers || { "Content-Type": "application/json" }
+
+      server = sinon.fakeServer.create();
+      server.respondWith([statusCode, headers, response]);
+
+      callback();
+
+      server.respond();
+      server.restore();
+    }
+
+---
+
+# Test med brukerinput og feiltilstand
+
+    .javascript
+    it("should show error message when pagination fails", function() {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    });
+
+---
+
+# Test med brukerinput og feiltilstand
+
+    .javascript
+    it("should show error message when pagination fails", function() {
+
+      // AJAX-responser
+      var response = readFixtures("responses/persons.json");
+      var errorResponse = readFixtures("responses/errors.json");
+
+      // Lager initielt view
+      var view = getPersonsViewFromResponse(response);
+
+      expect($(view.html).find(".errors")).not.toExist();
+
+
+
+
+
+
+
+
+
+
+
+    });
+
+---
+
+# Test med brukerinput og feiltilstand
+
+    .javascript
+    it("should show error message when pagination fails", function() {
+
+      // AJAX-responser
+      var response = readFixtures("responses/persons.json");
+      var errorResponse = readFixtures("responses/errors.json");
+
+      // Lager initielt view
+      var view = getPersonsViewFromResponse(response);
+
+      expect($(view.html).find(".errors")).not.toExist();
+
+      // Setter opp en feilrespons ...
+      fakeResponse(errorResponse, { statusCode: 503 }, function() {
+
+
+
+
+
+      });
+
+
+    });
+
+---
+
+# Test med brukerinput og feiltilstand
+
+    .javascript
+    it("should show error message when pagination fails", function() {
+
+      // AJAX-responser
+      var response = readFixtures("responses/persons.json");
+      var errorResponse = readFixtures("responses/errors.json");
+
+      // Lager initielt view
+      var view = getPersonsViewFromResponse(response);
+
+      expect($(view.html).find(".errors")).not.toExist();
+
+      // Setter opp en feilrespons ...
+      fakeResponse(errorResponse, { statusCode: 503 }, function() {
+
+        // ... og trigger feilen ved å klikke på neste-knappen
+        // (view-abstraksjonen lytter på klikket og starter pagineringen)
+        $(view.html).find("a.more").click();
+
+      });
+
+      expect($(view.html).find(".errors")).toExist();
+    });
+
+---
+
+.middle.center
+
+Så hva har vi fått til med disse abstraksjonene?
+
+---
+
+# Speed, speed, speed
+
+Våre tester:
+
+![](img/fast-tests.png)
+
+Husk: Følelsen av raske tester i nettleseren.
+
+Dersom man har tester man stoler på, er det (nesten) nok å refreshe testene.
+
+---
+
+# Problem: DOM-avhengighet
+
+    .javascript
+    var persons = $("#persons .person");
+    var projects = $(persons[0]).find(".projects li");
+    expect(projects.length).toEqual(3);
+
+DOM-avhengig og krever mye oppsett.
+
+---
+
+.middle.center
+
+Mer oppsett i DOM-en gjør det vanskeligere å skrive tester
+
+og vanskeligere å holde dem oppdatert.
+
+---
+
+# Løsning: Subviews
+
+.subviews[![](img/subviews.png)]
+
+---
+
+# Løsning: Subviews
+
+.subviews[![](img/subviews.png)]
+
+    .javascript
+    var projects = personView.$(".projects li");
+    expect(projects.length).toEqual(3);
+
+`$` tilgjengelig på viewet!
+
+---
+
+# Løsning: Subviews
+
+    .javascript
+    View.prototype = {
+      // ...
+
+      $: function(selector) {
+        return $(this.html).find(selector);
+      }
+
+      // ...
+    }
+
+Nå trenger vi til og med ikke DOM-en i testene!
+
+Nå blir koden enklere:
+
+    .javascript
+    // vi kan gå fra
+    $(view.html).find("a.more").click();
+
+    // til
+    view.$("a.more").click();
+
+---
+
+# Uavhengige view
+
+Noen egenskaper ved våre views:
+
+* Hvert view er "ansvarlig for seg selv".
+* Kontakt ut gjennom eventer.
+* Lytter på eventer fra våre modeller (og globale eventer).
+* Mye enklere å teste.
+
+De har blitt mye bedre på grunn av at vi har hatt nok tester til å tørre å
+gjøre større refaktoreringer. Trenger ikke å være redd for at ting feiler.
+
+Og vi kan også fjerne et view uten av app-en feiler.
+
+---
+
+# Modulær kodebase
+
+Hver modul kan eksistere, testes og gjenbrukes uavhengig av andre moduler.
+
+Eksempel: Vi har (nesten) lik paginering på flere sider, som veldig enkelt
+inkluderes:
+
+    .javascript
+    PersonsView.prototype.mixin(Pagination); // eller mixin(PersonsView, Pagination)
+
+Med `mixin`s kan eventer, utvidet initialisering, og så videre dras inn. Altså
+er alt oppsettet på plass med ett funksjonskall.
+
+---
+
+# Modulær kodebase
+
+I denne jobben kom vi også over en god refaktorering for testene våre.
+
+    .javascript
+    var sharedBehaviorForPagination = function(opts) {
+      describe("pagination", function() {
+        it("should show a link to more payments if there are more payments", function() {
+          // test stuff
+        });
+      });
+    }
+
+I testen som drar inn paginering:
+
+    .javascript
+    sharedBehaviorForPagination({
+      firstPage: "responses/persons.json",
+      secondPage: "responses/persons-second.json",
+      errors: "responses/errors",
+      getViewFromResponse: getPersonsViewFromResponse
+    });
+
+---
+
+# Kort om eventer
+
+Alle AJAX-kall var abstrahert bort i modellene våre, som fyrte eventer ved
+start av henting, ved feil, når ferdig, og så videre.
+
+Dermed kunne vi i viewet skrive:
+
+    .javascript
+    model.on("fetch:started",  this.addSpinner,    this);
+    model.on("fetch:finished", this.removeSpinner, this);
+    model.on("fetch:finished", this.render,        this);
+    //        navn             callback            context
+
+I tillegg hadde vi globale eventer:
+
+    .javascript
+    BEKK.events.on('init:complete', this.startApp, this);
+
+    BEKK.events.trigger('init:complete');
+
+---
+
+.middle.center
+
+Testene våre gjorde det enklere å jobbe med bedre abstraksjoner
+
+---
+
+# Veien videre
+
+* Testdekning (A world of pain!)
+* Duplisering, duplisering, duplisering
+* Lav(ere) kompleksitet (se [Simple Made Easy](http://www.infoq.com/presentations/Simple-Made-Easy)!)
+* Ikke behov for en diktator
+
+---
+
+# Hva vi har lært
+
+* Kom igang.
+* Seriøst, bare kom igang!
+* Rammeverkene er ok-ish.
+* Lære JavaScript "på nytt".
+* Stopp opp og prat sammen.
+* Parprogrammering på vanskelige problemer.
+* It ain't easy. Og det tar tid.
+
+---
+
+.middle.center
+
+Men det er verdt det!
+
+---
+
+.middle.center
+
+# Spørsmål?
+
+    </textarea>
+    <div id="slideshow"></div>
+  </body>
+</html>
